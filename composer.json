@@ -1,8 +1,17 @@
 {
-    "name": "wb/php-sdk",
-    "description": "Wildberries API PHP SDK",
+    "name": "your-username/wb-php-sdk",
+    "description": "Professional PHP SDK for Wildberries API with DTO support",
     "type": "library",
     "license": "MIT",
+    "keywords": ["wildberries", "api", "sdk", "php", "dto"],
+    "homepage": "https://github.com/ruslanakhatv/wb-php-sdk",
+    "authors": [
+        {
+            "name": "Ruslan Akhatov",
+            "email": "ruslan.akhatv@gmail.com",
+            "homepage": "https://github.com/ruslanakhatv"
+        }
+    ],
     "require": {
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.0",
@@ -20,5 +29,11 @@
         "psr-4": {
             "WB\\SDK\\Tests\\": "tests/"
         }
-    }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
