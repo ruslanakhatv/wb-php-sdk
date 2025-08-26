@@ -6,15 +6,7 @@
 
 ```bash
 composer require your-username/wb-php-sdk
-cat > README.md << 'EOF'
-# Wildberries PHP SDK
-
-Профессиональный PHP SDK для работы с API Wildberries с поддержкой DTO.
-
-## 📦 Установка
-
-```bash
-composer require your-username/wb-php-sdk
+Или добавьте в composer.json:
 {
     "require": {
         "your-username/wb-php-sdk": "dev-main"
@@ -26,6 +18,7 @@ composer require your-username/wb-php-sdk
         }
     ]
 }
+🚀 Быстрый старт
 <?php
 
 require 'vendor/autoload.php';
