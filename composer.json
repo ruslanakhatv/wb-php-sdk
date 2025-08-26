@@ -1,5 +1,5 @@
 {
-    "name": "your-username/wb-php-sdk",
+    "name": "ruslanakhatv/wb-php-sdk",
     "description": "Professional PHP SDK for Wildberries API with DTO support",
     "type": "library",
     "license": "MIT",

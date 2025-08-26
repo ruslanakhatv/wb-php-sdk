@@ -18,7 +18,8 @@ composer require your-username/wb-php-sdk
         }
     ]
 }
-🚀 Быстрый старт
+
+## 🚀 Быстрый старт
 <?php
 
 require 'vendor/autoload.php';
