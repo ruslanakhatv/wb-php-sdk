@@ -4,6 +4,7 @@ namespace WB\SDK\Clients;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use WB\SDK\Auth\ApiKeyAuthenticator;
 use WB\SDK\Exceptions\ApiException;
 use WB\SDK\Exceptions\AuthorizationException;
 
@@ -11,19 +12,23 @@ abstract class BaseClient
 {
     protected Client $client;
     protected string $baseUrl;
+    protected ApiKeyAuthenticator $authenticator;
 
     public function __construct(string $apiKey, string $baseUrl)
     {
+        $this->authenticator = new ApiKeyAuthenticator($apiKey);
         $this->baseUrl = $baseUrl;
+        
         $this->client = new Client([
             'base_uri' => $baseUrl,
-            'headers' => [
-                'Authorization' => $apiKey,
+            'headers' => array_merge([
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ],
+                'Accept' => 'application/json',
+                'User-Agent' => 'WB-PHP-SDK/1.0.0'
+            ], $this->authenticator->getAuthHeaders()),
             'timeout' => 30,
-            'connect_timeout' => 10
+            'connect_timeout' => 10,
+            'http_errors' => false
         ]);
     }
 
@@ -31,19 +36,57 @@ abstract class BaseClient
     {
         try {
             $response = $this->client->request($method, $uri, $options);
+            $statusCode = $response->getStatusCode();
             $body = $response->getBody()->getContents();
             
-            return json_decode($body, true) ?? [];
-        } catch (GuzzleException $e) {
-            if ($e->getCode() === 401) {
-                throw new AuthorizationException();
+            $data = json_decode($body, true) ?? [];
+            
+            if ($statusCode >= 400) {
+                $this->handleError($statusCode, $data);
             }
             
+            return $data;
+            
+        } catch (GuzzleException $e) {
             throw new ApiException(
                 sprintf('API request failed: %s', $e->getMessage()),
                 $e->getCode(),
                 $e
             );
+        }
+    }
+
+    /**
+     * Обрабатывает ошибки API
+     *
+     * @param int $statusCode
+     * @param array $data
+     * @throws AuthorizationException
+     * @throws ApiException
+     */
+    protected function handleError(int $statusCode, array $data): void
+    {
+        $errorMessage = $data['errorText'] ?? $data['message'] ?? 'Unknown error';
+        
+        switch ($statusCode) {
+            case 401:
+            case 403:
+                throw new AuthorizationException(
+                    sprintf('Authorization failed: %s', $errorMessage),
+                    $statusCode
+                );
+                
+            case 429:
+                throw new ApiException(
+                    sprintf('Rate limit exceeded: %s', $errorMessage),
+                    $statusCode
+                );
+                
+            default:
+                throw new ApiException(
+                    sprintf('API error %d: %s', $statusCode, $errorMessage),
+                    $statusCode
+                );
         }
     }
 
@@ -70,5 +113,15 @@ abstract class BaseClient
     protected function delete(string $uri, array $data = []): array
     {
         return $this->request('DELETE', $uri, ['json' => $data]);
+    }
+
+    /**
+     * Возвращает аутентификатор
+     *
+     * @return ApiKeyAuthenticator
+     */
+    public function getAuthenticator(): ApiKeyAuthenticator
+    {
+        return $this->authenticator;
     }
 }
